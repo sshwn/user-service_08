@@ -1,5 +1,6 @@
 package com.example.userservice.service;
 
+import com.example.userservice.client.OrderServiceClient;
 import com.example.userservice.dto.UserDto;
 import com.example.userservice.jpa.UserEntity;
 import com.example.userservice.jpa.UserRepository;
@@ -29,14 +30,21 @@ public class UserServiceImpl implements UserService {
     BCryptPasswordEncoder passwordEncoder;
 
     Environment env;
-    RestTemplate restTemplate;
+//    RestTemplate restTemplate;
+
+    OrderServiceClient orderServiceClient;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, Environment env, RestTemplate restTemplate) {
+    public UserServiceImpl(UserRepository userRepository,
+                           BCryptPasswordEncoder passwordEncoder,
+                           Environment env,
+  //                         RestTemplate restTemplate,
+                           OrderServiceClient orderServiceClient) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.env = env;
-        this.restTemplate = restTemplate;
+//        this.restTemplate = restTemplate;
+        this.orderServiceClient = orderServiceClient;
     }
 
     @Override
@@ -69,13 +77,16 @@ public class UserServiceImpl implements UserService {
 
 //        List<ResponseOrder> orders = new ArrayList<>();
         /* Using as rest template*/
-        String orderUrl = String.format(env.getProperty("order_service.url"), userId);  // config-service 의 user-service.yml 에 설정  %s -> userId로 치환
-        ResponseEntity<List<ResponseOrder>> orderListResponse =
-                restTemplate.exchange(orderUrl, HttpMethod.GET, null,
-                new ParameterizedTypeReference<List<ResponseOrder>>() {
-        });
+//        String orderUrl = String.format(env.getProperty("order_service.url"), userId);  // config-service 의 user-service.yml 에 설정  %s -> userId로 치환
+//        ResponseEntity<List<ResponseOrder>> orderListResponse =
+//                restTemplate.exchange(orderUrl, HttpMethod.GET, null,
+//                new ParameterizedTypeReference<List<ResponseOrder>>() {
+//        });
+//        List<ResponseOrder> ordersList = orderListResponse.getBody();
 
-        List<ResponseOrder> ordersList = orderListResponse.getBody();
+        /* Using as feign client */
+        List<ResponseOrder> ordersList = orderServiceClient.getOrders(userId);
+
         userDto.setOrders(ordersList);
 
         return userDto;
